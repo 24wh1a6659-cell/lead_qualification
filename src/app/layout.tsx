@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/layout/sidebar";
 import { AICopilotButton } from "@/components/dashboard/ai-copilot";
+import { AppProvider } from "@/lib/hooks/use-app-store";
 import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -19,13 +20,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${inter.className} animated-gradient min-h-screen`}>
-        <Sidebar />
-        <main className="ml-64 min-h-screen">
-          <div className="container mx-auto max-w-7xl px-8 py-8">
-            {children}
-          </div>
-        </main>
-        <AICopilotButton />
+        <AppProvider>
+          <Sidebar />
+          <main className="ml-64 min-h-screen">
+            <div className="container mx-auto max-w-7xl px-8 py-8">
+              {children}
+            </div>
+          </main>
+          <AICopilotButton />
+        </AppProvider>
       </body>
     </html>
   );

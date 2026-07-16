@@ -1,22 +1,18 @@
-// ============================================================================
-// LeadPilot AI – Core Type Definitions
-// ============================================================================
-
 import { z } from "zod";
 
 // ─── Lead Input ──────────────────────────────────────────────────────────────
 
 export const LeadInputSchema = z.object({
   companyName: z.string().min(1, "Company name is required"),
-  website: z.string().url().optional().or(z.literal("")),
-  industry: z.string().optional(),
-  companySize: z.string().optional(),
-  jobTitle: z.string().optional(),
-  email: z.string().email().optional().or(z.literal("")),
-  phone: z.string().optional(),
-  notes: z.string().optional(),
-  formSource: z.string().optional(),
-  rawSubmission: z.string().optional(), // For prompt injection detection
+  website: z.string().optional().or(z.literal("")),
+  industry: z.string().optional().or(z.literal("")),
+  companySize: z.string().optional().or(z.literal("")),
+  jobTitle: z.string().optional().or(z.literal("")),
+  email: z.string().optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
+  notes: z.string().optional().or(z.literal("")),
+  formSource: z.string().optional().or(z.literal("")),
+  rawSubmission: z.string().optional().or(z.literal("")),
 });
 
 export type LeadInput = z.infer<typeof LeadInputSchema>;
@@ -46,14 +42,14 @@ export interface EnrichmentData {
 
 export interface ICPFactor {
   name: string;
-  score: number; // 0–100
-  weight: number; // 0–1
+  score: number;
+  weight: number;
   evidence: string;
 }
 
 export interface ICPScore {
-  overall: number; // 0–100
-  confidence: number; // percentage
+  overall: number;
+  confidence: number;
   factors: ICPFactor[];
   classification: "Hot" | "Nurture" | "Disqualify";
   reasoning: string;
@@ -73,7 +69,7 @@ export interface FairnessReport {
     scoreB: number;
     match: boolean;
   };
-  biasScore: number; // 0 = no bias, 100 = maximum bias
+  biasScore: number;
   generatedAt: string;
 }
 
@@ -91,11 +87,11 @@ export interface PromptInjectionResult {
 
 export interface RevenuePrediction {
   dealSize: { min: number; max: number; expected: number; currency: string };
-  closeProbability: number; // 0–100
+  closeProbability: number;
   expectedRevenue: number;
   urgency: "low" | "medium" | "high" | "immediate";
   bestChannel: "email" | "phone" | "linkedin" | "in-person" | "video";
-  timeToClose: string; // e.g., "14-30 days"
+  timeToClose: string;
   confidence: number;
   reasoning: string;
 }
@@ -120,7 +116,7 @@ export interface EmailDraft {
   body: string;
   strategy: EmailStrategy;
   generatedAt: string;
-  groundedIn: string[]; // verified data points used
+  groundedIn: string[];
   edits: EmailEdit[];
 }
 
@@ -245,15 +241,6 @@ export interface DashboardAnalytics {
   recentActivity: AuditEntry[];
 }
 
-// ─── API Response ────────────────────────────────────────────────────────────
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
 // ─── Mock CRM Data ───────────────────────────────────────────────────────────
 
 export interface CrmRecord {
@@ -268,4 +255,13 @@ export interface CrmRecord {
   owner: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// ─── API Response ────────────────────────────────────────────────────────────
+
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
 }

@@ -1,13 +1,11 @@
-// ============================================================================
-// LeadPilot AI – API: GET /api/leads/[id], POST /api/leads/[id]/approve, etc.
-// ============================================================================
+"use server";
 
 import { NextRequest, NextResponse } from "next/server";
-import { getLead, updateLead } from "@/lib/db/mock-db";
+import { getLead, updateLead, getAllLeads, getAllCrmRecords } from "@/lib/db/mock-db";
 import { approveLead, rejectLead } from "@/lib/orchestrator";
 import { addAuditEntry } from "@/lib/utils/audit-logger";
-import { draftEmail, regenerateEmail } from "@/lib/agents/email-drafting-agent";
-import type { ApiResponse, EmailDraft, EmailEdit } from "@/lib/types";
+import { regenerateEmail } from "@/lib/agents/email-drafting-agent";
+import type { ApiResponse, EmailDraft, EmailEdit, Lead } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 
 export async function GET(
@@ -137,6 +135,23 @@ export async function POST(
         });
       }
 
+      case "update": {
+        const lead = getLead(id);
+        if (!lead) {
+          return NextResponse.json<ApiResponse>(
+            { success: false, error: "Lead not found" },
+            { status: 404 }
+          );
+        }
+        const { input, ...rest } = body;
+        const updated = updateLead(id, { ...rest, input: input ? { ...lead.input, ...input } : lead.input });
+        return NextResponse.json<ApiResponse>({
+          success: true,
+          data: updated,
+          message: "Lead updated successfully",
+        });
+      }
+
       default:
         return NextResponse.json<ApiResponse>(
           { success: false, error: "Unknown action" },
@@ -146,6 +161,34 @@ export async function POST(
   } catch (error) {
     return NextResponse.json<ApiResponse>(
       { success: false, error: "Operation failed" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const lead = getLead(id);
+    if (!lead) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: "Lead not found" },
+        { status: 404 }
+      );
+    }
+    // Remove from in-memory store by marking as archived
+    updateLead(id, { status: "archived" });
+    addAuditEntry(id, "lead_created", "system", { action: "deleted", archivedAt: new Date().toISOString() });
+    return NextResponse.json<ApiResponse>({
+      success: true,
+      message: "Lead deleted successfully",
+    });
+  } catch (error) {
+    return NextResponse.json<ApiResponse>(
+      { success: false, error: "Failed to delete lead" },
       { status: 500 }
     );
   }
